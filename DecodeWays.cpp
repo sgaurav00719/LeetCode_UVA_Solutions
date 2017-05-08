@@ -44,7 +44,7 @@ int numDecodings(string s){
 }
 
 int main(){
-	int res = numDecodings("1239");
+	int res = numDecodings("15");
 	cout << res << endl;
 	return 0;
 }
