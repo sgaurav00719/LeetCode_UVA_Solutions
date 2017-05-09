@@ -52,17 +52,17 @@ typedef pair<int, int> pii;
 typedef vector<pii> vpii;
 
 struct Tree {
-	string data;
+	int data;
 	Tree* left;
 	Tree* right;
 	Tree() {
-		data = "";
+		data = 0;
 		left = NULL;
 		right = NULL;
 	};
 };
 
-Tree* createNode(string val) {
+Tree* createNode(int val) {
 	Tree *p = new Tree;
 	p->data = val;
 	p->left = NULL;
@@ -79,29 +79,33 @@ Tree* level_order_insert(Tree* root, vector<string>& arr, int start, int size) {
 		return nullptr;
 
 	if (root == NULL) {
-		tobj = createNode(arr[start]);
+		tobj = createNode(stoi(arr[start]));
 		root = tobj;
 	}
 
 	if (root->left == NULL && root->right == NULL) {
-		if (left < size)
-			root->left = createNode(arr[left]);
-		if (right < size)
-			root->right = createNode(arr[right]);
+		if (left < size){
+			if(arr[left] == "#") root->left = createNode(0);
+			else root->left = createNode(stoi(arr[left]));
+		}
+		if (right < size){
+			if(arr[right] == "#") root->right = createNode(0);
+			root->right = createNode(stoi(arr[right]));
+		}
 	}
 	level_order_insert(root->left, arr, left, size);
 	level_order_insert(root->right, arr, right, size);
 	return root;
 }
 
-vector<vector<string>> levelOrder(Tree* n) {
-	vector<vector<string> > result;
+vector<vector<int>> levelOrder(Tree* n) {
+	vector<vector<int> > result;
 	if (!n)
 		return result;
 	queue<Tree*> q;
 	q.push(n);
 	q.push(NULL); // Push null to check if level is done or not
-	vector<string> cur_vec;
+	vector<int> cur_vec;
 	while (!q.empty()) {
 		Tree* t = q.front();
 		q.pop();
@@ -122,17 +126,48 @@ vector<vector<string>> levelOrder(Tree* n) {
 	return result;
 }
 
-/*int main() {
-	vector<string> A = { "1", "2", "3", "#", "#", "4", "#", "#", "5" };
+pair<int, int> maxSumHelper(Tree *root)
+{
+    if (root==NULL)
+    {
+        pair<int, int> sum(0, 0);
+        return sum;
+    }
+    pair<int, int> sum1 = maxSumHelper(root->left);
+    pair<int, int> sum2 = maxSumHelper(root->right);
+    pair<int, int> sum;
+
+    // This node is included (Left and right children
+    // are not included)
+    sum.first = sum1.second + sum2.second + root->data;
+
+    // This node is excluded (Either left or right
+    // child is included)
+    sum.second = max(sum1.first, sum1.second) +
+                 max(sum2.first, sum2.second);
+
+    return sum;
+}
+
+int maxSum(Tree *root)
+{
+    pair<int, int> res = maxSumHelper(root);
+    return max(res.first, res.second);
+}
+
+int main() {
+	vector<string> A = { "3", "4", "5", "1", "3", "#", "1"};
 	Tree *tobj = nullptr;
 	Tree * n = level_order_insert(tobj, A, 0, A.size());
-	vector<vector<string>> res =  levelOrder(n);
+	vector<vector<int>> res =  levelOrder(n);
 	for(auto &i : res){
 		for(auto &j: i){
 			cout << j << " ";
 		}
 		cout << endl;
 	}
+	cout << "\n\n";
+	cout << maxSum(n);
 	return 0;
-}*/
+}
 
