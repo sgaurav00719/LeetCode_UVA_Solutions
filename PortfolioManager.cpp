@@ -126,33 +126,62 @@ vector<vector<int>> levelOrder(Tree* n) {
 	return result;
 }
 
-pair<int, int> maxSumHelper(Tree *root)
+//  Declaration of methods
+int sumOfGrandChildren(Tree* node,map<struct Tree*, int>& mp);
+int getMaxSum(Tree* node);
+int getMaxSumUtil(Tree* node, map<struct Tree*, int>& mp);
+
+// method returns maximum sum possible from subtrees rooted
+// at grandChildrens of node 'node'
+int sumOfGrandChildren(Tree* node, map<Tree*, int>& mp)
 {
-    if (root==NULL)
-    {
-        pair<int, int> sum(0, 0);
-        return sum;
-    }
-    pair<int, int> sum1 = maxSumHelper(root->left);
-    pair<int, int> sum2 = maxSumHelper(root->right);
-    pair<int, int> sum;
+    int sum = 0;
 
-    // This node is included (Left and right children
-    // are not included)
-    sum.first = sum1.second + sum2.second + root->data;
+    //  call for children of left child only if it is not NULL
+    if (node->left)
+        sum += getMaxSumUtil(node->left->left, mp) +
+               getMaxSumUtil(node->left->right, mp);
 
-    // This node is excluded (Either left or right
-    // child is included)
-    sum.second = max(sum1.first, sum1.second) +
-                 max(sum2.first, sum2.second);
+    //  call for children of right child only if it is not NULL
+    if (node->right)
+        sum += getMaxSumUtil(node->right->left, mp) +
+               getMaxSumUtil(node->right->right, mp);
 
     return sum;
 }
 
-int maxSum(Tree *root)
+//  Utility method to return maximum sum rooted at node 'node'
+int getMaxSumUtil(Tree* node, map<struct Tree*, int>& mp)
 {
-    pair<int, int> res = maxSumHelper(root);
-    return max(res.first, res.second);
+    if (node == NULL)
+        return 0;
+
+    // If node is already processed then return calculated
+    // value from map
+    if (mp.find(node) != mp.end())
+        return mp[node];
+
+    //  take current node value and call for all grand children
+    int incl = node->data + sumOfGrandChildren(node, mp);
+
+    //  don't take current node value and call for all children
+    int excl = getMaxSumUtil(node->left, mp) +
+               getMaxSumUtil(node->right, mp);
+
+    //  choose maximum from both above calls and store that in map
+    mp[node] = max(incl, excl);
+
+    return mp[node];
+}
+
+// Returns maximum sum from subset of nodes
+// of binary tree under given constraints
+int getMaxSum(Tree* node)
+{
+    if (node == NULL)
+        return 0;
+    map<struct Tree*, int> mp;
+    return getMaxSumUtil(node, mp);
 }
 
 int main() {
@@ -167,7 +196,7 @@ int main() {
 		cout << endl;
 	}
 	cout << "\n\n";
-	cout << maxSum(n);
+	cout << getMaxSum(n);
 	return 0;
 }
 
